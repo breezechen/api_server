@@ -1,0 +1,27 @@
+package: github.com/WTHealth/server
+import:
+- package: github.com/alecthomas/log4go
+  repo: https://github.com/mattermost/log4go.git
+- package: github.com/fsnotify/fsnotify
+  version: v1.4.7
+- package: github.com/go-sql-driver/mysql
+- package: github.com/gorilla/handlers
+  version: v1.3.0
+- package: github.com/gorilla/mux
+  version: v1.6.1
+- package: github.com/lib/pq
+- package: github.com/mattermost/gorp
+- package: github.com/nicksnyder/go-i18n
+  version: v1.10.0
+  subpackages:
+  - i18n
+- package: github.com/pborman/uuid
+  version: v1.1
+- package: github.com/pkg/errors
+  version: v0.8.0
+- package: github.com/spf13/cobra
+- package: github.com/spf13/viper
+- package: golang.org/x/crypto
+  subpackages:
+  - bcrypt
+- package: github.com/avct/uasurfer
