@@ -14,12 +14,14 @@ import (
 	"net/http"
 	"net/mail"
 	"net/url"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 	"unicode"
 
+	"github.com/fatih/structs"
 	goi18n "github.com/nicksnyder/go-i18n/i18n"
 	"github.com/pborman/uuid"
 )
@@ -43,11 +45,11 @@ func AppErrorInit(t goi18n.TranslateFunc) {
 
 type AppError struct {
 	Id            string `json:"id"`
-	Message       string `json:"message"`               // Message to be display to the end user without debugging information
+	Message       string `json:"message"`              // Message to be display to the end user without debugging information
 	DetailedError string `json:"detailedError"`        // Internal error string to help the developer
 	RequestId     string `json:"requestId,omitempty"`  // The RequestId that's also set in the header
 	StatusCode    int    `json:"statusCode,omitempty"` // The http status code
-	Where         string `json:"-"`                     // The function where it happened in the form of Struct.Func
+	Where         string `json:"-"`                    // The function where it happened in the form of Struct.Func
 	IsOAuth       bool   `json:"isOAuth,omitempty"`    // Whether the error is OAuth specific
 	params        map[string]interface{}
 }
@@ -246,6 +248,22 @@ func StringFromJson(data io.Reader) string {
 	}
 }
 
+func ConvertToMap(s interface{}) map[string]interface{} {
+	v := reflect.ValueOf(s)
+	for v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	if v.Kind() == reflect.Map {
+		return s.(map[string]interface{})
+	} else if v.Kind() == reflect.Struct {
+		ns := structs.New(s)
+		ns.TagName = "json"
+		return ns.Map()
+	} else {
+		return nil
+	}
+}
+
 func GetServerIpAddress() string {
 	if addrs, err := net.InterfaceAddrs(); err != nil {
 		return ""
@@ -278,6 +296,10 @@ func IsValidEmail(email string) bool {
 	}
 
 	return false
+}
+
+func IsValidPhoneNumber(phoneNumber string) bool {
+	return true
 }
 
 var reservedName = []string{

@@ -4,10 +4,12 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/WTHealth/server/model"
@@ -55,4 +57,25 @@ func RenderWebError(w http.ResponseWriter, r *http.Request, status int, params u
 	fmt.Fprintln(w, `<noscript><meta http-equiv="refresh" content="0; url=`+template.HTMLEscapeString(destination)+`"></noscript>`)
 	fmt.Fprintln(w, `<a href="`+template.HTMLEscapeString(destination)+`" style="color: #c0c0c0;">...</a>`)
 	fmt.Fprintln(w, `</body></html>`)
+}
+
+func ReplyApiError(w http.ResponseWriter, r *http.Request, err *model.AppError) {
+	ret, _ := json.Marshal(&model.ApiResult{
+		Code: strconv.Itoa(err.StatusCode),
+		Desc: err.Message,
+		Data: make(map[string]interface{}),
+	})
+
+	w.WriteHeader(err.StatusCode)
+	w.Write([]byte(ret))
+}
+
+func ReplyApiResult(w http.ResponseWriter, r *http.Request, s interface{}) {
+	ret, _ := json.Marshal(model.ApiResult{
+		Code: "200",
+		Desc: "",
+		Data: model.ConvertToMap(s),
+	})
+
+	w.Write([]byte(ret))
 }

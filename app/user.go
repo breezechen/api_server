@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	l4g "github.com/alecthomas/log4go"
-	
+
 	"github.com/WTHealth/server/model"
 )
 
@@ -77,14 +77,41 @@ func (a *App) createUser(user *model.User) (*model.User, *model.AppError) {
 	}
 }
 
-// Check if the username is already used by another user. Return false if the username is invalid.
-func (a *App) IsUsernameTaken(name string) bool {
+func (a *App) IsValidUsername(name string) bool {
 
 	if !model.IsValidUsername(name) {
 		return false
 	}
 
-	if result := <-a.Srv.Store.User().GetByUsername(name); result.Err != nil {
+	_, err := a.GetUserByUsername(name)
+	if err == nil {
+		return false
+	}
+	return true
+}
+
+func (a *App) IsValidEmail(email string) bool {
+
+	if !model.IsValidEmail(email) {
+		return false
+	}
+
+	_, err := a.GetUserByEmail(email)
+	if err == nil {
+		return false
+	}
+
+	return true
+}
+
+func (a *App) IsValidPhoneNumber(phoneNumber string) bool {
+
+	if !model.IsValidPhoneNumber(phoneNumber) {
+		return false
+	}
+
+	_, err := a.GetUserByPhoneNumber(phoneNumber)
+	if err == nil {
 		return false
 	}
 
@@ -121,9 +148,22 @@ func (a *App) GetUserByEmail(email string) (*model.User, *model.AppError) {
 	}
 }
 
+func (a *App) GetUserByPhoneNumber(phoneNumber string) (*model.User, *model.AppError) {
+
+	if result := <-a.Srv.Store.User().GetByPhoneNumber(phoneNumber); result.Err != nil && result.Err.Id == "store.sql_user.missing_account.const" {
+		result.Err.StatusCode = http.StatusNotFound
+		return nil, result.Err
+	} else if result.Err != nil {
+		result.Err.StatusCode = http.StatusBadRequest
+		return nil, result.Err
+	} else {
+		return result.Data.(*model.User), nil
+	}
+}
+
 func (a *App) GetUserForLogin(loginId string) (*model.User, *model.AppError) {
 	if result := <-a.Srv.Store.User().GetForLogin(
-		loginId, true, true); result.Err != nil && result.Err.Id == "store.sql_user.get_for_login.multiple_users" {
+		loginId, true, true, true); result.Err != nil && result.Err.Id == "store.sql_user.get_for_login.multiple_users" {
 		// don't fall back to LDAP in this case since we already know there's an LDAP user, but that it shouldn't work
 		result.Err.StatusCode = http.StatusBadRequest
 		return nil, result.Err

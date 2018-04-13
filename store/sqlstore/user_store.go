@@ -15,8 +15,8 @@ import (
 var (
 	USER_SEARCH_TYPE_NAMES_NO_FULL_NAME = []string{"Username", "Nickname"}
 	USER_SEARCH_TYPE_NAMES              = []string{"Username", "FirstName", "LastName", "Nickname"}
-	USER_SEARCH_TYPE_ALL_NO_FULL_NAME   = []string{"Username", "Nickname", "Email"}
-	USER_SEARCH_TYPE_ALL                = []string{"Username", "FirstName", "LastName", "Nickname", "Email"}
+	USER_SEARCH_TYPE_ALL_NO_FULL_NAME   = []string{"Username", "Nickname", "Email", "PhoneNumber"}
+	USER_SEARCH_TYPE_ALL                = []string{"Username", "FirstName", "LastName", "Nickname", "Email", "PhoneNumber"}
 )
 
 type SqlUserStore struct {
@@ -36,6 +36,7 @@ func NewSqlUserStore(sqlStore SqlStore) store.UserStore {
 		table.ColMap("AuthData").SetMaxSize(128).SetUnique(true)
 		table.ColMap("AuthService").SetMaxSize(32)
 		table.ColMap("Email").SetMaxSize(128).SetUnique(true)
+		table.ColMap("PhoneNumber").SetMaxSize(32).SetUnique(true)
 		table.ColMap("Nickname").SetMaxSize(64)
 		table.ColMap("FirstName").SetMaxSize(64)
 		table.ColMap("LastName").SetMaxSize(64)
@@ -53,12 +54,14 @@ func NewSqlUserStore(sqlStore SqlStore) store.UserStore {
 
 func (us SqlUserStore) CreateIndexesIfNotExists() {
 	us.CreateIndexIfNotExists("idx_users_email", "Users", "Email")
+	us.CreateIndexIfNotExists("idx_users_phonenumber", "Users", "PhoneNumber")
 	us.CreateIndexIfNotExists("idx_users_update_at", "Users", "UpdateAt")
 	us.CreateIndexIfNotExists("idx_users_create_at", "Users", "CreateAt")
 	us.CreateIndexIfNotExists("idx_users_delete_at", "Users", "DeleteAt")
 
 	if us.DriverName() == model.DATABASE_DRIVER_POSTGRES {
 		us.CreateIndexIfNotExists("idx_users_email_lower", "Users", "lower(Email)")
+		us.CreateIndexIfNotExists("idx_users_phonenumber_lower", "Users", "lower(PhoneNumber)")
 		us.CreateIndexIfNotExists("idx_users_username_lower", "Users", "lower(Username)")
 		us.CreateIndexIfNotExists("idx_users_nickname_lower", "Users", "lower(Nickname)")
 		us.CreateIndexIfNotExists("idx_users_firstname_lower", "Users", "lower(FirstName)")
@@ -88,6 +91,8 @@ func (us SqlUserStore) Save(user *model.User) store.StoreChannel {
 				result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.email_exists.app_error", nil, "user_id="+user.Id+", "+err.Error(), http.StatusBadRequest)
 			} else if IsUniqueConstraintError(err, []string{"Username", "users_username_key", "idx_users_username_unique"}) {
 				result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.username_exists.app_error", nil, "user_id="+user.Id+", "+err.Error(), http.StatusBadRequest)
+			} else if IsUniqueConstraintError(err, []string{"PhoneNumber", "users_phonenumber_key", "idx_users_phonenumber_unique"}) {
+				result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.phonenumber_exists.app_error", nil, "user_id="+user.Id+", "+err.Error(), http.StatusBadRequest)
 			} else {
 				result.Err = model.NewAppError("SqlUserStore.Save", "store.sql_user.save.app_error", nil, "user_id="+user.Id+", "+err.Error(), http.StatusInternalServerError)
 			}
@@ -140,6 +145,8 @@ func (us SqlUserStore) Update(user *model.User, trustedUpdateData bool) store.St
 					result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.email_taken.app_error", nil, "user_id="+user.Id+", "+err.Error(), http.StatusBadRequest)
 				} else if IsUniqueConstraintError(err, []string{"Username", "users_username_key", "idx_users_username_unique"}) {
 					result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.username_taken.app_error", nil, "user_id="+user.Id+", "+err.Error(), http.StatusBadRequest)
+				} else if IsUniqueConstraintError(err, []string{"PhoneNumber", "users_phonenumber_key", "idx_users_phonenumber_unique"}) {
+					result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.phonenumber_taken.app_error", nil, "user_id="+user.Id+", "+err.Error(), http.StatusBadRequest)
 				} else {
 					result.Err = model.NewAppError("SqlUserStore.Update", "store.sql_user.update.updating.app_error", nil, "user_id="+user.Id+", "+err.Error(), http.StatusInternalServerError)
 				}
@@ -300,6 +307,20 @@ func (us SqlUserStore) GetByEmail(email string) store.StoreChannel {
 	})
 }
 
+func (us SqlUserStore) GetByPhoneNumber(phoneNumber string) store.StoreChannel {
+	return store.Do(func(result *store.StoreResult) {
+		phoneNumber = strings.ToLower(phoneNumber)
+
+		user := model.User{}
+
+		if err := us.GetReplica().SelectOne(&user, "SELECT * FROM Users WHERE PhoneNumber = :PhoneNumber", map[string]interface{}{"PhoneNumber": phoneNumber}); err != nil {
+			result.Err = model.NewAppError("SqlUserStore.GetByPhoneNumber", store.MISSING_ACCOUNT_ERROR, nil, "phoneNumber="+phoneNumber+", "+err.Error(), http.StatusInternalServerError)
+		}
+
+		result.Data = &user
+	})
+}
+
 func (us SqlUserStore) GetByUsername(username string) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
 		user := model.User{}
@@ -312,12 +333,13 @@ func (us SqlUserStore) GetByUsername(username string) store.StoreChannel {
 	})
 }
 
-func (us SqlUserStore) GetForLogin(loginId string, allowSignInWithUsername, allowSignInWithEmail bool) store.StoreChannel {
+func (us SqlUserStore) GetForLogin(loginId string, allowSignInWithUsername, allowSignInWithEmail, allowSignInWithPhoneNumber bool) store.StoreChannel {
 	return store.Do(func(result *store.StoreResult) {
 		params := map[string]interface{}{
-			"LoginId":                 loginId,
-			"AllowSignInWithUsername": allowSignInWithUsername,
-			"AllowSignInWithEmail":    allowSignInWithEmail,
+			"LoginId":                    loginId,
+			"AllowSignInWithUsername":    allowSignInWithUsername,
+			"AllowSignInWithEmail":       allowSignInWithEmail,
+			"AllowSignInWithPhoneNumber": allowSignInWithPhoneNumber,
 		}
 
 		users := []*model.User{}
@@ -329,7 +351,8 @@ func (us SqlUserStore) GetForLogin(loginId string, allowSignInWithUsername, allo
 				Users
 			WHERE
 				(:AllowSignInWithUsername AND Username = :LoginId)
-				OR (:AllowSignInWithEmail AND Email = :LoginId)`,
+				OR (:AllowSignInWithEmail AND Email = :LoginId)
+				OR (:AllowSignInWithPhoneNumber AND PhoneNumber = :LoginId)`,
 			params); err != nil {
 			result.Err = model.NewAppError("SqlUserStore.GetForLogin", "store.sql_user.get_for_login.app_error", nil, err.Error(), http.StatusInternalServerError)
 		} else if len(users) == 1 {

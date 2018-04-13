@@ -5,13 +5,14 @@ package api
 
 import (
 	"net/http"
-	
-	"github.com/WTHealth/server/model"
 
+	"github.com/WTHealth/server/model"
+	"github.com/WTHealth/server/utils"
 )
 
 func (api *API) InitUser() {
 	api.BaseRoutes.Users.Handle("/create", api.ApiAppHandler(createUser)).Methods("POST")
+	api.BaseRoutes.Users.Handle("/isTaken", api.ApiAppHandler(isTaken)).Methods("POST")
 	api.BaseRoutes.Users.Handle("/login", api.ApiAppHandler(login)).Methods("POST")
 	api.BaseRoutes.Users.Handle("/logout", api.ApiAppHandler(logout)).Methods("POST")
 }
@@ -31,7 +32,47 @@ func createUser(c *Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte(ruser.ToJson()))
+	utils.ReplyApiResult(w, r, ruser)
+}
+
+func isTaken(c *Context, w http.ResponseWriter, r *http.Request) {
+	props := model.MapFromJson(r.Body)
+
+	username := props["username"]
+	email := props["email"]
+	phoneNumber := props["phoneNumber"]
+
+	ret := model.UserIsTaken{
+		Username:    "",
+		Email:       "",
+		PhoneNumber: "",
+	}
+	if len(username) != 0 {
+		_, err := c.App.GetUserByUsername(username)
+		if err == nil {
+			ret.Username = "true"
+		} else {
+			ret.Username = "false"
+		}
+	}
+	if len(email) != 0 {
+		_, err := c.App.GetUserByEmail(email)
+		if err == nil {
+			ret.Email = "true"
+		} else {
+			ret.Email = "false"
+		}
+	}
+	if len(phoneNumber) != 0 {
+		_, err := c.App.GetUserByPhoneNumber(phoneNumber)
+		if err == nil {
+			ret.PhoneNumber = "true"
+		} else {
+			ret.PhoneNumber = "false"
+		}
+	}
+
+	utils.ReplyApiResult(w, r, ret)
 }
 
 func login(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -55,8 +96,9 @@ func login(c *Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.Sanitize(map[string]bool{})
+	user.Token = c.Session.Token
 
-	w.Write([]byte(user.ToJson()))
+	utils.ReplyApiResult(w, r, user)
 }
 
 // User MUST be authenticated completely before calling Login

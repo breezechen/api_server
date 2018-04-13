@@ -34,7 +34,7 @@ const (
 	COMMENTS_NOTIFY_ROOT         = "root"
 	COMMENTS_NOTIFY_ANY          = "any"
 
-	DEFAULT_LOCALE          = "zh"
+	DEFAULT_LOCALE          = "zh-CN"
 	USER_AUTH_SERVICE_EMAIL = "email"
 
 	USER_EMAIL_MAX_LENGTH     = 128
@@ -49,32 +49,36 @@ const (
 )
 
 type User struct {
-	Id                 string    `json:"id"`
-	CreateAt           int64     `json:"createAt,omitempty"`
-	UpdateAt           int64     `json:"updateAt,omitempty"`
-	DeleteAt           int64     `json:"deleteAt"`
-	Username           string    `json:"username"`
-	Password           string    `json:"password,omitempty"`
-	AuthData           *string   `json:"authData,omitempty"`
-	AuthService        string    `json:"authService"`
-	Email              string    `json:"email"`
-	EmailVerified      bool      `json:"emailVerified,omitempty"`
-	Nickname           string    `json:"nickname"`
-	FirstName          string    `json:"firstName"`
-	LastName           string    `json:"lastName"`
-	Position           string    `json:"position"`
-	Roles              string    `json:"roles"`
+	Id            string  `json:"id"`
+	CreateAt      int64   `json:"createAt,omitempty"`
+	UpdateAt      int64   `json:"updateAt,omitempty"`
+	DeleteAt      int64   `json:"deleteAt"`
+	Username      string  `json:"username"`
+	Password      string  `json:"password,omitempty"`
+	AuthData      *string `json:"authData,omitempty"`
+	AuthService   string  `json:"authService,omitempty"`
+	Email         string  `json:"email"`
+	EmailVerified bool    `json:"emailVerified,omitempty"`
+	PhoneNumber   string  `json:"phoneNumber"`
+	PhoneVerified bool    `json:"phoneVerified"`
+
+	Nickname           string    `json:"nickname,omitempty"`
+	FirstName          string    `json:"firstName,omitempty"`
+	LastName           string    `json:"lastName,omitempty"`
+	Position           string    `json:"position,omitempty"`
+	Roles              string    `json:"roles,omitempty"`
 	AllowMarketing     bool      `json:"allowMarketing,omitempty"`
 	Props              StringMap `json:"props,omitempty"`
 	NotifyProps        StringMap `json:"notifyProps,omitempty"`
 	LastPasswordUpdate int64     `json:"lastPasswordUpdate,omitempty"`
 	LastPictureUpdate  int64     `json:"lastPictureUpdate,omitempty"`
 	FailedAttempts     int       `json:"failedAttempts,omitempty"`
-	Locale             string    `json:"locale"`
-	Timezone           StringMap `json:"timezone"`
+	Locale             string    `json:"locale,omitempty"`
+	Timezone           StringMap `json:"timezone,omitempty"`
 	MfaActive          bool      `json:"mfaActive,omitempty"`
 	MfaSecret          string    `json:"mfaSecret,omitempty"`
 	LastActivityAt     int64     `db:"-" json:"lastActivityAt,omitempty"`
+	Token              string    `db:"-" json:"token"`
 }
 
 type UserPatch struct {
@@ -94,6 +98,12 @@ type UserAuth struct {
 	Password    string  `json:"password,omitempty"`
 	AuthData    *string `json:"authData,omitempty"`
 	AuthService string  `json:"authService,omitempty"`
+}
+
+type UserIsTaken struct {
+	Username    string `json:"username,omitempty"`
+	Email       string `json:"email,omitempty"`
+	PhoneNumber string `json:"phoneNumber,omitempty"`
 }
 
 // IsValid validates the user and returns an error if it isn't configured
@@ -172,6 +182,10 @@ func NormalizeEmail(email string) string {
 	return strings.ToLower(email)
 }
 
+func NormalizePhoneNumber(pn string) string {
+	return strings.Replace(pn, " ", "", -1)
+}
+
 // PreSave will set the Id and Username if missing.  It will also fill
 // in the CreateAt, UpdateAt times.  It will also hash the password.  It should
 // be run before saving the user to the db.
@@ -190,6 +204,7 @@ func (u *User) PreSave() {
 
 	u.Username = NormalizeUsername(u.Username)
 	u.Email = NormalizeEmail(u.Email)
+	u.PhoneNumber = NormalizePhoneNumber(u.PhoneNumber)
 
 	u.CreateAt = GetMillis()
 	u.UpdateAt = u.CreateAt

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	l4g "github.com/alecthomas/log4go"	
+	l4g "github.com/alecthomas/log4go"
 
 	"github.com/WTHealth/server/app"
 	"github.com/WTHealth/server/model"
@@ -137,7 +137,6 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-
 	if c.Err == nil && h.requireUser {
 		c.UserRequired()
 	}
@@ -158,9 +157,10 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if h.isApi {
-			w.WriteHeader(c.Err.StatusCode)
-			w.Write([]byte(c.Err.ToJson()))
-		} 
+			utils.ReplyApiError(w, r, c.Err)
+		} else {
+			utils.RenderWebAppError(w, r, c.Err)
+		}
 	}
 }
 

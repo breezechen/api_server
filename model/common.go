@@ -29,3 +29,9 @@ const (
 	API_URL_SUFFIX_V4 = "/api/v4"
 	API_URL_SUFFIX    = API_URL_SUFFIX_V4
 )
+
+type ApiResult struct {
+	Code string                 `json:"resultCode"`
+	Desc string                 `json:"resultDesc"`
+	Data map[string]interface{} `json:"resultData"`
+}

@@ -9,6 +9,7 @@ import (
 
 	l4g "github.com/alecthomas/log4go"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 
 	"github.com/WTHealth/server/model"
 	"github.com/WTHealth/server/store"
@@ -22,8 +23,8 @@ type App struct {
 
 	Srv *Server
 
-	config          atomic.Value
-	configFile      string
+	config     atomic.Value
+	configFile string
 
 	siteURL string
 
@@ -45,13 +46,20 @@ func New(options ...Option) (outApp *App, outErr error) {
 		Srv: &Server{
 			Router: mux.NewRouter(),
 		},
-		configFile:       "config.json",
+		configFile: "config.json",
 	}
 	defer func() {
 		if outErr != nil {
 			app.Shutdown()
 		}
 	}()
+
+	if utils.T == nil {
+		if err := utils.TranslationsPreInit(); err != nil {
+			return nil, errors.Wrapf(err, "unable to load Mattermost translation files")
+		}
+	}
+	model.AppErrorInit(utils.T)
 
 	for _, option := range options {
 		option(app)

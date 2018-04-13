@@ -67,9 +67,10 @@ type UserStore interface {
 
 	GetByEmail(email string) StoreChannel
 	GetByUsername(username string) StoreChannel
-	GetForLogin(loginId string, allowSignInWithUsername, allowSignInWithEmail bool) StoreChannel
+	GetByPhoneNumber(phoneNumber string) StoreChannel
+	GetForLogin(loginId string, allowSignInWithUsername, allowSignInWithEmail, allowSignInWithPhoneNumber bool) StoreChannel
 	VerifyEmail(userId string) StoreChannel
-	
+
 	GetTotalUsersCount() StoreChannel
 	PermanentDelete(userId string) StoreChannel
 	AnalyticsActiveCount(time int64) StoreChannel
