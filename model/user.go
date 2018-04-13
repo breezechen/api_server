@@ -34,7 +34,7 @@ const (
 	COMMENTS_NOTIFY_ROOT         = "root"
 	COMMENTS_NOTIFY_ANY          = "any"
 
-	DEFAULT_LOCALE          = "en"
+	DEFAULT_LOCALE          = "zh"
 	USER_AUTH_SERVICE_EMAIL = "email"
 
 	USER_EMAIL_MAX_LENGTH     = 128
@@ -50,50 +50,50 @@ const (
 
 type User struct {
 	Id                 string    `json:"id"`
-	CreateAt           int64     `json:"create_at,omitempty"`
-	UpdateAt           int64     `json:"update_at,omitempty"`
-	DeleteAt           int64     `json:"delete_at"`
+	CreateAt           int64     `json:"createAt,omitempty"`
+	UpdateAt           int64     `json:"updateAt,omitempty"`
+	DeleteAt           int64     `json:"deleteAt"`
 	Username           string    `json:"username"`
 	Password           string    `json:"password,omitempty"`
-	AuthData           *string   `json:"auth_data,omitempty"`
-	AuthService        string    `json:"auth_service"`
+	AuthData           *string   `json:"authData,omitempty"`
+	AuthService        string    `json:"authService"`
 	Email              string    `json:"email"`
-	EmailVerified      bool      `json:"email_verified,omitempty"`
+	EmailVerified      bool      `json:"emailVerified,omitempty"`
 	Nickname           string    `json:"nickname"`
-	FirstName          string    `json:"first_name"`
-	LastName           string    `json:"last_name"`
+	FirstName          string    `json:"firstName"`
+	LastName           string    `json:"lastName"`
 	Position           string    `json:"position"`
 	Roles              string    `json:"roles"`
-	AllowMarketing     bool      `json:"allow_marketing,omitempty"`
+	AllowMarketing     bool      `json:"allowMarketing,omitempty"`
 	Props              StringMap `json:"props,omitempty"`
-	NotifyProps        StringMap `json:"notify_props,omitempty"`
-	LastPasswordUpdate int64     `json:"last_password_update,omitempty"`
-	LastPictureUpdate  int64     `json:"last_picture_update,omitempty"`
-	FailedAttempts     int       `json:"failed_attempts,omitempty"`
+	NotifyProps        StringMap `json:"notifyProps,omitempty"`
+	LastPasswordUpdate int64     `json:"lastPasswordUpdate,omitempty"`
+	LastPictureUpdate  int64     `json:"lastPictureUpdate,omitempty"`
+	FailedAttempts     int       `json:"failedAttempts,omitempty"`
 	Locale             string    `json:"locale"`
 	Timezone           StringMap `json:"timezone"`
-	MfaActive          bool      `json:"mfa_active,omitempty"`
-	MfaSecret          string    `json:"mfa_secret,omitempty"`
-	LastActivityAt     int64     `db:"-" json:"last_activity_at,omitempty"`
+	MfaActive          bool      `json:"mfaActive,omitempty"`
+	MfaSecret          string    `json:"mfaSecret,omitempty"`
+	LastActivityAt     int64     `db:"-" json:"lastActivityAt,omitempty"`
 }
 
 type UserPatch struct {
 	Username    *string   `json:"username"`
 	Nickname    *string   `json:"nickname"`
-	FirstName   *string   `json:"first_name"`
-	LastName    *string   `json:"last_name"`
+	FirstName   *string   `json:"firstName"`
+	LastName    *string   `json:"lastName"`
 	Position    *string   `json:"position"`
 	Email       *string   `json:"email"`
 	Props       StringMap `json:"props,omitempty"`
-	NotifyProps StringMap `json:"notify_props,omitempty"`
+	NotifyProps StringMap `json:"notifyProps,omitempty"`
 	Locale      *string   `json:"locale"`
 	Timezone    StringMap `json:"timezone"`
 }
 
 type UserAuth struct {
 	Password    string  `json:"password,omitempty"`
-	AuthData    *string `json:"auth_data,omitempty"`
-	AuthService string  `json:"auth_service,omitempty"`
+	AuthData    *string `json:"authData,omitempty"`
+	AuthService string  `json:"authService,omitempty"`
 }
 
 // IsValid validates the user and returns an error if it isn't configured
@@ -105,11 +105,11 @@ func (u *User) IsValid() *AppError {
 	}
 
 	if u.CreateAt == 0 {
-		return InvalidUserError("create_at", u.Id)
+		return InvalidUserError("createAt", u.Id)
 	}
 
 	if u.UpdateAt == 0 {
-		return InvalidUserError("update_at", u.Id)
+		return InvalidUserError("updateAt", u.Id)
 	}
 
 	if !IsValidUsername(u.Username) {
@@ -129,15 +129,15 @@ func (u *User) IsValid() *AppError {
 	}
 
 	if utf8.RuneCountInString(u.FirstName) > USER_FIRST_NAME_MAX_RUNES {
-		return InvalidUserError("first_name", u.Id)
+		return InvalidUserError("firstName", u.Id)
 	}
 
 	if utf8.RuneCountInString(u.LastName) > USER_LAST_NAME_MAX_RUNES {
-		return InvalidUserError("last_name", u.Id)
+		return InvalidUserError("lastName", u.Id)
 	}
 
 	if u.AuthData != nil && len(*u.AuthData) > USER_AUTH_DATA_MAX_LENGTH {
-		return InvalidUserError("auth_data", u.Id)
+		return InvalidUserError("authData", u.Id)
 	}
 
 	if u.AuthData != nil && len(*u.AuthData) > 0 && len(u.AuthService) == 0 {
@@ -159,7 +159,7 @@ func InvalidUserError(fieldName string, userId string) *AppError {
 	id := fmt.Sprintf("model.user.is_valid.%s.app_error", fieldName)
 	details := ""
 	if userId != "" {
-		details = "user_id=" + userId
+		details = "userId=" + userId
 	}
 	return NewAppError("User.IsValid", id, nil, details, http.StatusBadRequest)
 }

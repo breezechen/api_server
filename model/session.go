@@ -25,13 +25,13 @@ const (
 type Session struct {
 	Id             string        `json:"id"`
 	Token          string        `json:"token"`
-	CreateAt       int64         `json:"create_at"`
-	ExpiresAt      int64         `json:"expires_at"`
-	LastActivityAt int64         `json:"last_activity_at"`
-	UserId         string        `json:"user_id"`
-	DeviceId       string        `json:"device_id"`
+	CreateAt       int64         `json:"createAt"`
+	ExpiresAt      int64         `json:"expiresAt"`
+	LastActivityAt int64         `json:"lastActivityAt"`
+	UserId         string        `json:"userId"`
+	DeviceId       string        `json:"deviceId"`
 	Roles          string        `json:"roles"`
-	IsOAuth        bool          `json:"is_oauth"`
+	IsOAuth        bool          `json:"isOAuth"`
 	Props          StringMap     `json:"props"`
 }
 

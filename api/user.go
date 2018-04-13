@@ -72,7 +72,7 @@ func doLogin(c *Context, w http.ResponseWriter, r *http.Request, user *model.Use
 
 func logout(c *Context, w http.ResponseWriter, r *http.Request) {
 	data := make(map[string]string)
-	data["user_id"] = c.Session.UserId
+	data["userId"] = c.Session.UserId
 
 	Logout(c, w, r)
 	if c.Err == nil {
