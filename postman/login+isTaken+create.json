@@ -1,0 +1,292 @@
+{
+	"variables": [],
+	"info": {
+		"name": "wthserver",
+		"_postman_id": "27cb8766-974a-9784-3b62-2c9ba408c4df",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "login",
+			"request": {
+				"url": "192.168.6.125:8065/api/v1/users/login",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"loginId\": \"13590389418\",\n\t\"password\": \"123456\",\n\t\"deviceId\": \"chrome\"\n}"
+				},
+				"description": ""
+			},
+			"response": [
+				{
+					"id": "0baea9dc-95b3-4bdc-8fc5-28628f0ad1cc",
+					"name": "login",
+					"originalRequest": {
+						"url": "172.105.208.219/api/v1/users/login",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"loginId\": \"13590389418\",\n\t\"password\": \"1234561\",\n\t\"deviceId\": \"chrome\"\n}"
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"_postman_previewtype": "text",
+					"header": [
+						{
+							"name": "content-length",
+							"key": "content-length",
+							"value": "396",
+							"description": "The length of the response body in octets (8-bit bytes)"
+						},
+						{
+							"name": "content-type",
+							"key": "content-type",
+							"value": "application/json",
+							"description": "The mime type of this content"
+						},
+						{
+							"name": "date",
+							"key": "date",
+							"value": "Fri, 13 Apr 2018 13:50:50 GMT",
+							"description": "The date and time that the message was sent"
+						},
+						{
+							"name": "token",
+							"key": "token",
+							"value": "aehm9bj8bt843q4iy1nd9mf46h",
+							"description": "Custom header"
+						},
+						{
+							"name": "x-request-id",
+							"key": "x-request-id",
+							"value": "1dqfrwynibnxi83iwipi16tpnr",
+							"description": "Custom header"
+						}
+					],
+					"cookie": [],
+					"responseTime": 1674,
+					"body": "{\"resultCode\":\"200\",\"resultDesc\":\"\",\"resultData\":{\"authData\":\"\",\"createAt\":1523627434471,\"deleteAt\":0,\"email\":\"12111@12.com\",\"failedAttempts\":1,\"id\":\"hpphnj5azbdwjy8uiqyexx8e4w\",\"lastPasswordUpdate\":1523627434471,\"locale\":\"zh-CN\",\"notifyProps\":{},\"phoneNumber\":\"13590389418\",\"phoneVerified\":false,\"props\":{},\"token\":\"aehm9bj8bt843q4iy1nd9mf46h\",\"updateAt\":1523627434471,\"username\":\"13590389418\"}}"
+				}
+			]
+		},
+		{
+			"name": "isTaken",
+			"request": {
+				"url": "172.105.208.219/api/v1/users/isTaken",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"phoneNumber\": \"13590389418\",\n\t\"usernumber\":\"13590389418\",\n\t\"email\": \"ab@12.com\"\n}"
+				},
+				"description": ""
+			},
+			"response": [
+				{
+					"id": "40cd30ac-98d1-4a29-ae55-78e6ae64ca3a",
+					"name": "isTaken",
+					"originalRequest": {
+						"url": "172.105.208.219/api/v1/users/isTaken",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"phoneNumber\": \"13590389418\",\n\t\"usernumber\":\"13590389418\",\n\t\"email\": \"ab@12.com\"\n}"
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"_postman_previewtype": "text",
+					"header": [
+						{
+							"name": "content-length",
+							"key": "content-length",
+							"value": "88",
+							"description": "The length of the response body in octets (8-bit bytes)"
+						},
+						{
+							"name": "content-type",
+							"key": "content-type",
+							"value": "application/json",
+							"description": "The mime type of this content"
+						},
+						{
+							"name": "date",
+							"key": "date",
+							"value": "Fri, 13 Apr 2018 13:57:13 GMT",
+							"description": "The date and time that the message was sent"
+						},
+						{
+							"name": "x-request-id",
+							"key": "x-request-id",
+							"value": "94gmruqbabbjzpjspjtz199yeh",
+							"description": "Custom header"
+						}
+					],
+					"cookie": [],
+					"responseTime": 264,
+					"body": "{\"resultCode\":\"200\",\"resultDesc\":\"\",\"resultData\":{\"email\":\"false\",\"phoneNumber\":\"true\"}}"
+				}
+			]
+		},
+		{
+			"name": "createUser",
+			"request": {
+				"url": "172.105.208.219/api/v1/users/create",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"username\": \"13590389418\",\n\"phoneNumber\": \"13590389418\",\n\"password\": \"1234561\",\n\"email\": \"12111@12.com\"\n}"
+				},
+				"description": ""
+			},
+			"response": [
+				{
+					"id": "1c7fa135-caab-44a6-8e2d-794bca76f508",
+					"name": "createUser",
+					"originalRequest": {
+						"url": "172.105.208.219/api/v1/users/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"name": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"username\": \"13590389418\",\n\"phoneNumber\": \"13590389418\",\n\"password\": \"1234561\",\n\"email\": \"12111@12.com\"\n}"
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"_postman_previewtype": "text",
+					"header": [
+						{
+							"name": "content-length",
+							"key": "content-length",
+							"value": "91",
+							"description": "The length of the response body in octets (8-bit bytes)"
+						},
+						{
+							"name": "content-type",
+							"key": "content-type",
+							"value": "application/json",
+							"description": "The mime type of this content"
+						},
+						{
+							"name": "date",
+							"key": "date",
+							"value": "Fri, 13 Apr 2018 13:56:49 GMT",
+							"description": "The date and time that the message was sent"
+						},
+						{
+							"name": "x-request-id",
+							"key": "x-request-id",
+							"value": "on6mymy8h385bb9ucxttuchhyh",
+							"description": "Custom header"
+						}
+					],
+					"cookie": [],
+					"responseTime": 379,
+					"body": "{\"resultCode\":\"400\",\"resultDesc\":\"使用该用户名的账户已存在。\",\"resultData\":{}}"
+				},
+				{
+					"id": "fbe7b98d-2d5c-4ca4-bd78-9b2a04932331",
+					"name": "createUser",
+					"originalRequest": {
+						"url": "172.105.208.219/api/v1/users/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"username\": \"135903890000\",\n\"phoneNumber\": \"135903890000\",\n\"password\": \"123456\",\n\"email\": \"135903890000@12.com\"\n}"
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"_postman_previewtype": "text",
+					"header": [
+						{
+							"name": "content-length",
+							"key": "content-length",
+							"value": "360",
+							"description": "The length of the response body in octets (8-bit bytes)"
+						},
+						{
+							"name": "content-type",
+							"key": "content-type",
+							"value": "application/json",
+							"description": "The mime type of this content"
+						},
+						{
+							"name": "date",
+							"key": "date",
+							"value": "Fri, 13 Apr 2018 13:58:35 GMT",
+							"description": "The date and time that the message was sent"
+						},
+						{
+							"name": "x-request-id",
+							"key": "x-request-id",
+							"value": "9hamssueqirub8ftjxhfzb86yc",
+							"description": "Custom header"
+						}
+					],
+					"cookie": [],
+					"responseTime": 356,
+					"body": "{\"resultCode\":\"200\",\"resultDesc\":\"\",\"resultData\":{\"authData\":\"\",\"createAt\":1523627915688,\"deleteAt\":0,\"email\":\"135903890000@12.com\",\"id\":\"rs6ga18ni78e3g5hfcbfcqd9br\",\"lastPasswordUpdate\":1523627915688,\"locale\":\"zh-CN\",\"notifyProps\":{},\"phoneNumber\":\"135903890000\",\"phoneVerified\":false,\"props\":{},\"token\":\"\",\"updateAt\":1523627915688,\"username\":\"135903890000\"}}"
+				}
+			]
+		}
+	]
+}
