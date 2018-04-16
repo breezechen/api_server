@@ -14,7 +14,7 @@ func (api *API) InitUser() {
 	api.BaseRoutes.Users.Handle("/create", api.ApiHandler(createUser)).Methods("POST")
 	api.BaseRoutes.Users.Handle("/isTaken", api.ApiHandler(isTaken)).Methods("POST")
 	api.BaseRoutes.Users.Handle("/login", api.ApiHandler(login)).Methods("POST")
-	api.BaseRoutes.Users.Handle("/logout", api.ApiHandler(logout)).Methods("POST")
+	api.BaseRoutes.Users.Handle("/logout", api.ApiSessionRequired(logout)).Methods("POST")
 }
 
 func createUser(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -113,7 +113,7 @@ func doLogin(c *Context, w http.ResponseWriter, r *http.Request, user *model.Use
 }
 
 func logout(c *Context, w http.ResponseWriter, r *http.Request) {
-	data := make(map[string]string)
+	data := make(map[string]interface{})
 	data["userId"] = c.Session.UserId
 
 	Logout(c, w, r)

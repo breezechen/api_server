@@ -126,6 +126,11 @@ func (a *App) authenticateUser(user *model.User, password, mfaToken string) (*mo
 }
 
 func ParseAuthTokenFromRequest(r *http.Request) (string, TokenLocation) {
+	token := r.Header.Get(model.HEADER_TOKEN)
+	if len(token) == 26 {
+		return token, TokenLocationHeader
+	}
+
 	authHeader := r.Header.Get(model.HEADER_AUTH)
 	if len(authHeader) > 6 && strings.ToUpper(authHeader[0:6]) == model.HEADER_BEARER {
 		// Default session token
@@ -141,7 +146,7 @@ func ParseAuthTokenFromRequest(r *http.Request) (string, TokenLocation) {
 	}
 
 	// Attempt to parse token out of the query string
-	if token := r.URL.Query().Get("access_token"); token != "" {
+	if token = r.URL.Query().Get("access_token"); token != "" {
 		return token, TokenLocationQueryString
 	}
 

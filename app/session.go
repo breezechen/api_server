@@ -97,6 +97,8 @@ func (a *App) RevokeSession(session *model.Session) *model.AppError {
 		return result.Err
 	}
 	
+	a.ClearSessionCacheForUser(session.UserId)
+	
 	return nil
 }
 
@@ -125,4 +127,17 @@ func (a *App) RevokeSessionsForDeviceId(userId string, deviceId string, currentS
 	}
 
 	return nil
+}
+
+func (a *App) ClearSessionCacheForUser(userId string) {
+	keys := a.sessionCache.Keys()
+
+	for _, key := range keys {
+		if ts, ok := a.sessionCache.Get(key); ok {
+			session := ts.(*model.Session)
+			if session.UserId == userId {
+				a.sessionCache.Remove(key)
+			}
+		}
+	}
 }
