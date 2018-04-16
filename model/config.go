@@ -161,7 +161,6 @@ const (
 type ServiceSettings struct {
 	SiteURL                                           *string
 	WebsocketURL                                      *string
-	LicenseFileLocation                               *string
 	ListenAddress                                     *string
 	ConnectionSecurity                                *string
 	TLSCertFile                                       *string
@@ -173,24 +172,9 @@ type ServiceSettings struct {
 	WriteTimeout                                      *int
 	MaximumLoginAttempts                              *int
 	GoroutineHealthThreshold                          *int
-	GoogleDeveloperKey                                string
-	EnableOAuthServiceProvider                        bool
-	EnableIncomingWebhooks                            bool
-	EnableOutgoingWebhooks                            bool
-	EnableCommands                                    *bool
-	EnableOnlyAdminIntegrations                       *bool
-	EnablePostUsernameOverride                        bool
-	EnablePostIconOverride                            bool
-	EnableAPIv3                                       *bool
-	EnableLinkPreviews                                *bool
-	EnableTesting                                     bool
 	EnableDeveloper                                   *bool
-	EnableSecurityFixAlert                            *bool
 	EnableInsecureOutgoingConnections                 *bool
 	AllowedUntrustedInternalConnections               *string
-	EnableMultifactorAuthentication                   *bool
-	EnforceMultifactorAuthentication                  *bool
-	EnableUserAccessTokens                            *bool
 	AllowCorsFrom                                     *string
 	AllowCookiesForSubdomains                         *bool
 	SessionLengthWebInDays                            *int
@@ -200,28 +184,6 @@ type ServiceSettings struct {
 	SessionIdleTimeoutInMinutes                       *int
 	WebsocketSecurePort                               *int
 	WebsocketPort                                     *int
-	WebserverMode                                     *string
-	EnableCustomEmoji                                 *bool
-	EnableEmojiPicker                                 *bool
-	RestrictCustomEmojiCreation                       *string
-	RestrictPostDelete                                *string
-	AllowEditPost                                     *string
-	PostEditTimeLimit                                 *int
-	TimeBetweenUserTypingUpdatesMilliseconds          *int64
-	EnablePostSearch                                  *bool
-	EnableUserTypingMessages                          *bool
-	EnableChannelViewedMessages                       *bool
-	EnableUserStatuses                                *bool
-	ExperimentalEnableAuthenticationTransfer          *bool
-	ClusterLogTimeoutMilliseconds                     *int
-	CloseUnusedDirectMessages                         *bool
-	EnablePreviewFeatures                             *bool
-	EnableTutorial                                    *bool
-	ExperimentalEnableDefaultChannelLeaveJoinMessages *bool
-	ExperimentalGroupUnreadChannels                   *string
-	ImageProxyType                                    *string
-	ImageProxyURL                                     *string
-	ImageProxyOptions                                 *string
 }
 
 func (s *ServiceSettings) SetDefaults() {
@@ -233,29 +195,16 @@ func (s *ServiceSettings) SetDefaults() {
 		s.WebsocketURL = NewString("")
 	}
 
-	if s.LicenseFileLocation == nil {
-		s.LicenseFileLocation = NewString("")
-	}
 
 	if s.ListenAddress == nil {
 		s.ListenAddress = NewString(SERVICE_SETTINGS_DEFAULT_LISTEN_AND_ADDRESS)
 	}
 
-	if s.EnableAPIv3 == nil {
-		s.EnableAPIv3 = NewBool(true)
-	}
-
-	if s.EnableLinkPreviews == nil {
-		s.EnableLinkPreviews = NewBool(false)
-	}
 
 	if s.EnableDeveloper == nil {
 		s.EnableDeveloper = NewBool(false)
 	}
 
-	if s.EnableSecurityFixAlert == nil {
-		s.EnableSecurityFixAlert = NewBool(true)
-	}
 
 	if s.EnableInsecureOutgoingConnections == nil {
 		s.EnableInsecureOutgoingConnections = NewBool(false)
@@ -263,18 +212,6 @@ func (s *ServiceSettings) SetDefaults() {
 
 	if s.AllowedUntrustedInternalConnections == nil {
 		s.AllowedUntrustedInternalConnections = NewString("")
-	}
-
-	if s.EnableMultifactorAuthentication == nil {
-		s.EnableMultifactorAuthentication = NewBool(false)
-	}
-
-	if s.EnforceMultifactorAuthentication == nil {
-		s.EnforceMultifactorAuthentication = NewBool(false)
-	}
-
-	if s.EnableUserAccessTokens == nil {
-		s.EnableUserAccessTokens = NewBool(false)
 	}
 
 	if s.GoroutineHealthThreshold == nil {
@@ -317,38 +254,6 @@ func (s *ServiceSettings) SetDefaults() {
 		s.Forward80To443 = NewBool(false)
 	}
 
-	if s.TimeBetweenUserTypingUpdatesMilliseconds == nil {
-		s.TimeBetweenUserTypingUpdatesMilliseconds = NewInt64(5000)
-	}
-
-	if s.EnablePostSearch == nil {
-		s.EnablePostSearch = NewBool(true)
-	}
-
-	if s.EnableUserTypingMessages == nil {
-		s.EnableUserTypingMessages = NewBool(true)
-	}
-
-	if s.EnableChannelViewedMessages == nil {
-		s.EnableChannelViewedMessages = NewBool(true)
-	}
-
-	if s.EnableUserStatuses == nil {
-		s.EnableUserStatuses = NewBool(true)
-	}
-
-	if s.ClusterLogTimeoutMilliseconds == nil {
-		s.ClusterLogTimeoutMilliseconds = NewInt(2000)
-	}
-
-	if s.CloseUnusedDirectMessages == nil {
-		s.CloseUnusedDirectMessages = NewBool(false)
-	}
-
-	if s.EnableTutorial == nil {
-		s.EnableTutorial = NewBool(true)
-	}
-
 	if s.SessionLengthWebInDays == nil {
 		s.SessionLengthWebInDays = NewInt(30)
 	}
@@ -369,14 +274,6 @@ func (s *ServiceSettings) SetDefaults() {
 		s.SessionIdleTimeoutInMinutes = NewInt(0)
 	}
 
-	if s.EnableCommands == nil {
-		s.EnableCommands = NewBool(false)
-	}
-
-	if s.EnableOnlyAdminIntegrations == nil {
-		s.EnableOnlyAdminIntegrations = NewBool(true)
-	}
-
 	if s.WebsocketPort == nil {
 		s.WebsocketPort = NewInt(80)
 	}
@@ -391,68 +288,6 @@ func (s *ServiceSettings) SetDefaults() {
 
 	if s.AllowCookiesForSubdomains == nil {
 		s.AllowCookiesForSubdomains = NewBool(false)
-	}
-
-	if s.WebserverMode == nil {
-		s.WebserverMode = NewString("gzip")
-	} else if *s.WebserverMode == "regular" {
-		*s.WebserverMode = "gzip"
-	}
-
-	if s.EnableCustomEmoji == nil {
-		s.EnableCustomEmoji = NewBool(false)
-	}
-
-	if s.EnableEmojiPicker == nil {
-		s.EnableEmojiPicker = NewBool(true)
-	}
-
-	if s.RestrictCustomEmojiCreation == nil {
-		s.RestrictCustomEmojiCreation = NewString(RESTRICT_EMOJI_CREATION_ALL)
-	}
-
-	if s.RestrictPostDelete == nil {
-		s.RestrictPostDelete = NewString(PERMISSIONS_DELETE_POST_ALL)
-	}
-
-	if s.AllowEditPost == nil {
-		s.AllowEditPost = NewString(ALLOW_EDIT_POST_ALWAYS)
-	}
-
-	if s.ExperimentalEnableAuthenticationTransfer == nil {
-		s.ExperimentalEnableAuthenticationTransfer = NewBool(true)
-	}
-
-	if s.PostEditTimeLimit == nil {
-		s.PostEditTimeLimit = NewInt(-1)
-	}
-
-	if s.EnablePreviewFeatures == nil {
-		s.EnablePreviewFeatures = NewBool(true)
-	}
-
-	if s.ExperimentalEnableDefaultChannelLeaveJoinMessages == nil {
-		s.ExperimentalEnableDefaultChannelLeaveJoinMessages = NewBool(true)
-	}
-
-	if s.ExperimentalGroupUnreadChannels == nil {
-		s.ExperimentalGroupUnreadChannels = NewString(GROUP_UNREAD_CHANNELS_DISABLED)
-	} else if *s.ExperimentalGroupUnreadChannels == "0" {
-		s.ExperimentalGroupUnreadChannels = NewString(GROUP_UNREAD_CHANNELS_DISABLED)
-	} else if *s.ExperimentalGroupUnreadChannels == "1" {
-		s.ExperimentalGroupUnreadChannels = NewString(GROUP_UNREAD_CHANNELS_DEFAULT_ON)
-	}
-
-	if s.ImageProxyType == nil {
-		s.ImageProxyType = NewString("")
-	}
-
-	if s.ImageProxyURL == nil {
-		s.ImageProxyURL = NewString("")
-	}
-
-	if s.ImageProxyOptions == nil {
-		s.ImageProxyOptions = NewString("")
 	}
 }
 
@@ -689,10 +524,6 @@ func (ss *ServiceSettings) isValid() *AppError {
 		return NewAppError("Config.IsValid", "model.config.is_valid.write_timeout.app_error", nil, "", http.StatusBadRequest)
 	}
 
-	if *ss.TimeBetweenUserTypingUpdatesMilliseconds < 1000 {
-		return NewAppError("Config.IsValid", "model.config.is_valid.time_between_user_typing.app_error", nil, "", http.StatusBadRequest)
-	}
-
 	if *ss.MaximumLoginAttempts <= 0 {
 		return NewAppError("Config.IsValid", "model.config.is_valid.login_attempts.app_error", nil, "", http.StatusBadRequest)
 	}
@@ -712,23 +543,7 @@ func (ss *ServiceSettings) isValid() *AppError {
 	if len(*ss.ListenAddress) == 0 {
 		return NewAppError("Config.IsValid", "model.config.is_valid.listen_address.app_error", nil, "", http.StatusBadRequest)
 	}
-
-	if *ss.ExperimentalGroupUnreadChannels != GROUP_UNREAD_CHANNELS_DISABLED &&
-		*ss.ExperimentalGroupUnreadChannels != GROUP_UNREAD_CHANNELS_DEFAULT_ON &&
-		*ss.ExperimentalGroupUnreadChannels != GROUP_UNREAD_CHANNELS_DEFAULT_OFF {
-		return NewAppError("Config.IsValid", "model.config.is_valid.group_unread_channels.app_error", nil, "", http.StatusBadRequest)
-	}
-
-	switch *ss.ImageProxyType {
-	case "":
-	case "atmos/camo":
-		if *ss.ImageProxyOptions == "" {
-			return NewAppError("Config.IsValid", "model.config.is_valid.atmos_camo_image_proxy_options.app_error", nil, "", http.StatusBadRequest)
-		}
-	default:
-		return NewAppError("Config.IsValid", "model.config.is_valid.image_proxy_type.app_error", nil, "", http.StatusBadRequest)
-	}
-
+	
 	return nil
 }
 

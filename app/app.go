@@ -29,6 +29,7 @@ type App struct {
 	siteURL string
 
 	newStore func() store.Store
+	sessionCache         *utils.Cache
 }
 
 var appCount = 0
@@ -47,6 +48,7 @@ func New(options ...Option) (outApp *App, outErr error) {
 			Router: mux.NewRouter(),
 		},
 		configFile: "config.json",
+		sessionCache:     utils.NewLru(model.SESSION_CACHE_SIZE),
 	}
 	defer func() {
 		if outErr != nil {

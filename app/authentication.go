@@ -89,9 +89,6 @@ func (a *App) CheckUserAllAuthenticationCriteria(user *model.User, mfaToken stri
 }
 
 func (a *App) CheckUserPreflightAuthenticationCriteria(user *model.User, mfaToken string) *model.AppError {
-	if err := a.CheckUserMfa(user, mfaToken); err != nil {
-		return err
-	}
 
 	if err := checkUserNotDisabled(user); err != nil {
 		return err
@@ -99,14 +96,6 @@ func (a *App) CheckUserPreflightAuthenticationCriteria(user *model.User, mfaToke
 
 	if err := checkUserLoginAttempts(user, *a.Config().ServiceSettings.MaximumLoginAttempts); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (a *App) CheckUserMfa(user *model.User, token string) *model.AppError {
-	if !user.MfaActive || !*a.Config().ServiceSettings.EnableMultifactorAuthentication {
-		return nil
 	}
 
 	return nil
