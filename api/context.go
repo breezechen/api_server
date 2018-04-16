@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	l4g "github.com/alecthomas/log4go"
+	goi18n "github.com/nicksnyder/go-i18n/i18n"
 
 	"github.com/WTHealth/server/app"
 	"github.com/WTHealth/server/model"
@@ -17,75 +18,55 @@ import (
 type Context struct {
 	App           *app.App
 	Session       model.Session
+	Err           *model.AppError
+	T             goi18n.TranslateFunc
 	RequestId     string
 	IpAddress     string
 	Path          string
-	Err           *model.AppError
 	siteURLHeader string
 }
 
-func (api *API) ApiAppHandler(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
-	return &handler{api.App, h, false, false, true, false, false, false, false}
+func (api *API) ApiHandler(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
+	return &handler{
+		app:            api.App,
+		handleFunc:     h,
+		requireSession: false,
+		trustRequester: false,
+	}
 }
 
-func (api *API) AppHandler(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
-	return &handler{api.App, h, false, false, false, false, false, false, false}
+func (api *API) ApiSessionRequired(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
+	return &handler{
+		app:            api.App,
+		handleFunc:     h,
+		requireSession: true,
+		trustRequester: false,
+	}
 }
 
-func (api *API) AppHandlerIndependent(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
-	return &handler{api.App, h, false, false, false, false, true, false, false}
+func (api *API) ApiHandlerTrustRequester(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
+	return &handler{
+		app:            api.App,
+		handleFunc:     h,
+		requireSession: false,
+		trustRequester: true,
+	}
 }
 
-func (api *API) ApiUserRequired(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
-	return &handler{api.App, h, true, false, true, false, false, false, true}
-}
-
-func (api *API) ApiUserRequiredActivity(h func(*Context, http.ResponseWriter, *http.Request), isUserActivity bool) http.Handler {
-	return &handler{api.App, h, true, false, true, isUserActivity, false, false, true}
-}
-
-func (api *API) ApiUserRequiredMfa(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
-	return &handler{api.App, h, true, false, true, false, false, false, false}
-}
-
-func (api *API) UserRequired(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
-	return &handler{api.App, h, true, false, false, false, false, false, true}
-}
-
-func (api *API) AppHandlerTrustRequester(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
-	return &handler{api.App, h, false, false, false, false, false, true, false}
-}
-
-func (api *API) ApiAdminSystemRequired(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
-	return &handler{api.App, h, true, true, true, false, false, false, true}
-}
-
-func (api *API) ApiAdminSystemRequiredTrustRequester(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
-	return &handler{api.App, h, true, true, true, false, false, true, true}
-}
-
-func (api *API) ApiAppHandlerTrustRequester(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
-	return &handler{api.App, h, false, false, true, false, false, true, false}
-}
-
-func (api *API) ApiUserRequiredTrustRequester(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
-	return &handler{api.App, h, true, false, true, false, false, true, true}
-}
-
-func (api *API) ApiAppHandlerTrustRequesterIndependent(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
-	return &handler{api.App, h, false, false, true, false, true, true, false}
+func (api *API) ApiSessionRequiredTrustRequester(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
+	return &handler{
+		app:            api.App,
+		handleFunc:     h,
+		requireSession: true,
+		trustRequester: true,
+	}
 }
 
 type handler struct {
-	app                *app.App
-	handleFunc         func(*Context, http.ResponseWriter, *http.Request)
-	requireUser        bool
-	requireSystemAdmin bool
-	isApi              bool
-	isUserActivity     bool
-	isTeamIndependent  bool
-	trustRequester     bool
-	requireMfa         bool
+	app            *app.App
+	handleFunc     func(*Context, http.ResponseWriter, *http.Request)
+	requireSession bool
+	trustRequester bool
 }
 
 func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -99,7 +80,7 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	token, tokenLocation := app.ParseAuthTokenFromRequest(r)
 
 	// CSRF Check
-	if tokenLocation == app.TokenLocationCookie && h.requireUser && !h.trustRequester {
+	if tokenLocation == app.TokenLocationCookie && h.requireSession && !h.trustRequester {
 		if r.Header.Get(model.HEADER_REQUESTED_WITH) != model.HEADER_REQUESTED_WITH_XML {
 			c.Err = model.NewAppError("ServeHTTP", "api.context.session_expired.app_error", nil, "token="+token+" Appears to be a CSRF attempt", http.StatusUnauthorized)
 			token = ""
@@ -110,35 +91,30 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set(model.HEADER_REQUEST_ID, c.RequestId)
 
-	// Instruct the browser not to display us in an iframe unless is the same origin for anti-clickjacking
-	if !h.isApi {
-		w.Header().Set("X-Frame-Options", "SAMEORIGIN")
-		w.Header().Set("Content-Security-Policy", "frame-ancestors 'self'")
-	} else {
-		// All api response bodies will be JSON formatted by default
-		w.Header().Set("Content-Type", "application/json")
-
-		if r.Method == "GET" {
-			w.Header().Set("Expires", "0")
-		}
-	}
+	w.Header().Set("Content-Type", "application/json")
 
 	if len(token) != 0 {
 		session, err := c.App.GetSession(token)
 
 		if err != nil {
-			l4g.Error("api.context.invalid_session.error", err.Error())
-			c.RemoveSessionCookie(w, r)
-			if h.requireUser || h.requireSystemAdmin {
+			l4g.Info(utils.T("api.context.invalid_session.error"), err.Error())
+			if err.StatusCode == http.StatusInternalServerError {
+				c.Err = err
+			} else if h.requireSession {
+				c.RemoveSessionCookie(w, r)
 				c.Err = model.NewAppError("ServeHTTP", "api.context.session_expired.app_error", nil, "token="+token, http.StatusUnauthorized)
 			}
+		} else if !session.IsOAuth && tokenLocation == app.TokenLocationQueryString {
+			c.Err = model.NewAppError("ServeHTTP", "api.context.token_provided.app_error", nil, "token="+token, http.StatusUnauthorized)
 		} else {
 			c.Session = *session
 		}
 	}
 
-	if c.Err == nil && h.requireUser {
-		c.UserRequired()
+	c.Path = r.URL.Path
+
+	if c.Err == nil && h.requireSession {
+		c.SessionRequired()
 	}
 
 	if c.Err == nil {
@@ -147,20 +123,23 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Handle errors that have occoured
 	if c.Err != nil {
+		c.Err.Translate(c.T)
 		c.Err.RequestId = c.RequestId
-		c.LogError(c.Err)
+
+		if c.Err.Id == "api.context.session_expired.app_error" {
+			c.LogInfo(c.Err)
+		} else {
+			c.LogError(c.Err)
+		}
+
 		c.Err.Where = r.URL.Path
 
 		// Block out detailed error when not in developer mode
 		if !*c.App.Config().ServiceSettings.EnableDeveloper {
 			c.Err.DetailedError = ""
 		}
-
-		if h.isApi {
-			utils.ReplyApiError(w, r, c.Err)
-		} else {
-			utils.RenderWebAppError(w, r, c.Err)
-		}
+		
+		utils.ReplyApiError(w, r, c.Err)
 	}
 }
 
@@ -175,12 +154,17 @@ func (c *Context) LogError(err *model.AppError) {
 	}
 }
 
+func (c *Context) LogInfo(err *model.AppError) {
+	l4g.Info(utils.TDefault("api.context.log.error"), c.Path, err.Where, err.StatusCode,
+		c.RequestId, c.Session.UserId, c.IpAddress, err.SystemMessage(utils.TDefault), err.DetailedError)
+}
+
 func (c *Context) LogDebug(err *model.AppError) {
 	l4g.Debug("api.context.log.error", c.Path, err.Where, err.StatusCode,
 		c.RequestId, c.Session.UserId, c.IpAddress, err.SystemMessage(utils.TDefault), err.DetailedError)
 }
 
-func (c *Context) UserRequired() {
+func (c *Context) SessionRequired() {
 	if !*c.App.Config().ServiceSettings.EnableUserAccessTokens && c.Session.Props[model.SESSION_PROP_TYPE] == model.SESSION_TYPE_USER_ACCESS_TOKEN {
 		c.Err = model.NewAppError("", "api.context.session_expired.app_error", nil, "UserAccessToken", http.StatusUnauthorized)
 		return
@@ -241,7 +225,7 @@ func Handle404(a *app.App, w http.ResponseWriter, r *http.Request) {
 	if IsApiCall(r) {
 		w.WriteHeader(err.StatusCode)
 		err.DetailedError = "There doesn't appear to be an api call for the url='" + r.URL.Path + "'.  Typo? are you missing a team_id or user_id as part of the url?"
-		w.Write([]byte(err.ToJson()))
+		utils.ReplyApiError(w, r, err)
 	} else {
 		utils.RenderWebAppError(w, r, err)
 	}

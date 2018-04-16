@@ -25,9 +25,7 @@ const (
 	CLIENT_DIR = "client"
 
 	API_URL_SUFFIX_V1 = "/api/v1"
-	API_URL_SUFFIX_V3 = "/api/v3"
-	API_URL_SUFFIX_V4 = "/api/v4"
-	API_URL_SUFFIX    = API_URL_SUFFIX_V4
+	API_URL_SUFFIX    = API_URL_SUFFIX_V1
 )
 
 type ApiResult struct {
