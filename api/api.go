@@ -18,7 +18,6 @@ type Routes struct {
 	ApiRoot *mux.Router // 'api/v1'
 
 	Users    *mux.Router // 'api/v1/users'
-	NeedUser *mux.Router // 'api/v1/users/{user_id:[A-Za-z0-9]+}'
 }
 
 type API struct {
@@ -34,7 +33,6 @@ func Init(a *app.App, root *mux.Router) *API {
 	api.BaseRoutes.Root = root
 	api.BaseRoutes.ApiRoot = root.PathPrefix(model.API_URL_SUFFIX_V1).Subrouter()
 	api.BaseRoutes.Users = api.BaseRoutes.ApiRoot.PathPrefix("/users").Subrouter()
-	api.BaseRoutes.NeedUser = api.BaseRoutes.Users.PathPrefix("/{user_id:[A-Za-z0-9]+}").Subrouter()
 
 	api.InitUser()
 
@@ -46,10 +44,4 @@ func Init(a *app.App, root *mux.Router) *API {
 
 func (api *API) Handle404(w http.ResponseWriter, r *http.Request) {
 	Handle404(api.App, w, r)
-}
-
-func ReturnStatusOK(w http.ResponseWriter) {
-	m := make(map[string]string)
-	m[model.STATUS] = model.STATUS_OK
-	w.Write([]byte(model.MapToJson(m)))
 }

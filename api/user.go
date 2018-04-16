@@ -118,7 +118,7 @@ func logout(c *Context, w http.ResponseWriter, r *http.Request) {
 
 	Logout(c, w, r)
 	if c.Err == nil {
-		w.Write([]byte(model.MapToJson(data)))
+		utils.ReplyApiResult(w, r, data)
 	}
 }
 
