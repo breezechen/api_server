@@ -138,9 +138,52 @@ func Logout(c *Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func getUser(c *Context, w http.ResponseWriter, r *http.Request) {
+	user, err := c.App.GetUser(c.Session.UserId)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	ret := make(map[string]interface{})
+	ret["userId"] = user.Id
+	ret["gender"] = "unknown"
+	ret["birthday"] = "1995年9月30日"
+	ret["city"] = user.Position
+	ret["height"] = "175"
+	ret["rank"] = "noob"
+	ret["goal"] = "loseWeight"
+	ret["recommend"] = []string{""}
+	ret["weight"] = "60"
+	ret["level"] = "0"
+	ret["name"] = user.FirstName + " " + user.LastName
+
+	utils.ReplyApiResult(w, r, ret)
 }
 
 func updateUser(c *Context, w http.ResponseWriter, r *http.Request) {
+	props := model.MapFromJson(r.Body)
+	name := props["name"]
+	gender := props["gender"]
+	birthday := props["birthday"]
+	city := props["city"]
+	height := props["height"]
+	rank := props["rank"]
+	goal := props["goal"]
+	recommend := props["recommend"]
+	weight := props["weight"]
+
+	ret := make(map[string]interface{})
+	ret["name"] = name
+	ret["gender"] = gender
+	ret["birthday"] = birthday
+	ret["city"] = city
+	ret["height"] = height
+	ret["rank"] = rank
+	ret["goal"] = goal
+	ret["recommend"] = recommend
+	ret["weight"] = weight
+
+	utils.ReplyApiResult(w, r, ret)
 }
 
 func genAuthCode(c *Context, w http.ResponseWriter, r *http.Request) {

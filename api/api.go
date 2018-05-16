@@ -18,8 +18,8 @@ type Routes struct {
 	ApiRoot *mux.Router // 'api/v1'
 
 	Users    *mux.Router // 'api/v1/users'
-	plan     *mux.Router // 'api/v1/plan'
-	exercise *mux.Router // 'api/v1/exercise'
+	Plan     *mux.Router // 'api/v1/plan'
+	Exercise *mux.Router // 'api/v1/exercise'
 }
 
 type API struct {
@@ -35,8 +35,8 @@ func Init(a *app.App, root *mux.Router) *API {
 	api.BaseRoutes.Root = root
 	api.BaseRoutes.ApiRoot = root.PathPrefix(model.API_URL_SUFFIX_V1).Subrouter()
 	api.BaseRoutes.Users = api.BaseRoutes.ApiRoot.PathPrefix("/users").Subrouter()
-	api.BaseRoutes.plan = api.BaseRoutes.ApiRoot.PathPrefix("/plan").Subrouter()
-	api.BaseRoutes.exercise = api.BaseRoutes.ApiRoot.PathPrefix("/exercise").Subrouter()
+	api.BaseRoutes.Plan = api.BaseRoutes.ApiRoot.PathPrefix("/plan").Subrouter()
+	api.BaseRoutes.Exercise = api.BaseRoutes.ApiRoot.PathPrefix("/exercise").Subrouter()
 
 	api.InitUser()
 	api.InitPlan()

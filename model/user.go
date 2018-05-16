@@ -81,6 +81,18 @@ type User struct {
 	Token              string    `db:"-" json:"token,omitempty"`
 }
 
+type UserProfile struct {
+	UserId   string `json:"id"`
+	Gender   string `json:"gender"`
+	Birthday string `json:"birthday"`
+	City     string `json:"city"`
+	Height   int    `json:"height"`
+	Rank     string `json:"rank"`
+	Goal     string `json:"goal"`
+	Weight   string `json:"weight"`
+	Level    string `json:"level"`
+}
+
 type UserPatch struct {
 	Username    *string   `json:"username"`
 	Nickname    *string   `json:"nickname"`
