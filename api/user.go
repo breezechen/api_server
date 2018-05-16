@@ -15,6 +15,9 @@ func (api *API) InitUser() {
 	api.BaseRoutes.Users.Handle("/isTaken", api.ApiHandler(isTaken)).Methods("POST")
 	api.BaseRoutes.Users.Handle("/login", api.ApiHandler(login)).Methods("POST")
 	api.BaseRoutes.Users.Handle("/logout", api.ApiSessionRequired(logout)).Methods("POST")
+	api.BaseRoutes.Users.Handle("", api.ApiSessionRequired(getUser)).Methods("POST")
+	api.BaseRoutes.Users.Handle("/update", api.ApiSessionRequired(updateUser)).Methods("POST")
+	api.BaseRoutes.Users.Handle("/authCode", api.ApiHandler(genAuthCode)).Methods("POST")
 }
 
 func createUser(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -82,9 +85,11 @@ func login(c *Context, w http.ResponseWriter, r *http.Request) {
 	loginId := props["loginId"]
 	password := props["password"]
 	deviceId := props["deviceId"]
-	mfaToken := props["token"]
+	// authSessionId := props["authSessionId"]
+	authCode := props["authCode"]
+	// mfaToken := props["token"]
 
-	user, err := c.App.AuthenticateUserForLogin(id, loginId, password, mfaToken, deviceId)
+	user, err := c.App.AuthenticateUserForLogin(id, loginId, password, authCode, deviceId)
 	if err != nil {
 		c.Err = err
 		return
@@ -130,4 +135,22 @@ func Logout(c *Context, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+func getUser(c *Context, w http.ResponseWriter, r *http.Request) {
+}
+
+func updateUser(c *Context, w http.ResponseWriter, r *http.Request) {
+}
+
+func genAuthCode(c *Context, w http.ResponseWriter, r *http.Request) {
+	props := model.MapFromJson(r.Body)
+	phoneNo := props["phoneNumber"]
+	authCode, _ := c.App.GenAuthCode(phoneNo)
+
+	ret := make(map[string]interface{})
+	ret["authSessionId"] = authCode.Id
+	ret["authCode"] = authCode.Code
+
+	utils.ReplyApiResult(w, r, ret)
 }

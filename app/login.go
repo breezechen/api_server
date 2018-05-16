@@ -9,15 +9,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/avct/uasurfer"
 	"github.com/WTHealth/server/model"
+	"github.com/avct/uasurfer"
 )
 
 func (a *App) AuthenticateUserForLogin(id, loginId, password, mfaToken, deviceId string) (*model.User, *model.AppError) {
-	if len(password) == 0 {
-		err := model.NewAppError("AuthenticateUserForLogin", "api.user.login.blank_pwd.app_error", nil, "", http.StatusBadRequest)
-		return nil, err
-	}
+	// if len(password) == 0 {
+	// 	err := model.NewAppError("AuthenticateUserForLogin", "api.user.login.blank_pwd.app_error", nil, "", http.StatusBadRequest)
+	// 	return nil, err
+	// }
 
 	var user *model.User
 	var err *model.AppError

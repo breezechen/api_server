@@ -235,3 +235,20 @@ func (a *App) PermanentDeleteUser(user *model.User) *model.AppError {
 
 	return nil
 }
+
+func (a *App) GenAuthCode(phoneNo string) (*model.AuthCode, *model.AppError) {
+	num := model.NewNumberCode(6)
+	code := model.AuthCode{
+		Id:       phoneNo,
+		Code:     num,
+		Type:     "sms",
+		Duration: 10 * 60,
+	}
+	res, ok := a.sessionCache.Get(code.Id)
+	if !ok {
+		a.sessionCache.AddWithExpiresInSecs(code.Id, code, code.Duration)
+	} else {
+		code = res.(model.AuthCode)
+	}
+	return &code, nil
+}

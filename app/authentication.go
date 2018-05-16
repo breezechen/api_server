@@ -44,6 +44,18 @@ func (a *App) CheckPasswordAndAllCriteria(user *model.User, password string, mfa
 		return err
 	}
 
+	if len(mfaToken) > 0 {
+		phoneNo := user.PhoneNumber
+		res, ok := a.sessionCache.Get(phoneNo)
+		if ok {
+			authCode := res.(model.AuthCode)
+			if authCode.Code == mfaToken {
+				return nil
+			}
+		}
+		return model.NewAppError("checkUserPassword", "api.user.check_user_password.invalid.auth_code", nil, "user_id="+user.Id, http.StatusUnauthorized)
+	}
+
 	if err := a.checkUserPassword(user, password); err != nil {
 		return err
 	}
